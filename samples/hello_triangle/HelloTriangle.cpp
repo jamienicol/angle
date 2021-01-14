@@ -14,67 +14,72 @@
 //            http://www.opengles-book.com
 
 #include "SampleApplication.h"
+#include <vector>
 
-#include "util/shader_utils.h"
+const int tex_size          = 60;
+const int unpack_row_length = 64;
+const int bpp               = 4;
 
 class HelloTriangleSample : public SampleApplication
 {
   public:
     HelloTriangleSample(int argc, char **argv)
-        : SampleApplication("HelloTriangle", argc, argv, 2, 0)
+        : SampleApplication("HelloTriangle", argc, argv, 3, 0)
     {}
 
     bool initialize() override
     {
-        constexpr char kVS[] = R"(attribute vec4 vPosition;
-void main()
-{
-    gl_Position = vPosition;
-})";
-
-        constexpr char kFS[] = R"(precision mediump float;
-void main()
-{
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-})";
-
-        mProgram = CompileProgram(kVS, kFS);
-        if (!mProgram)
-        {
-            return false;
+        std::vector<uint8_t> data(tex_size * unpack_row_length * bpp);
+        for (int j = 0; j < tex_size; j++) {
+            for (int i = 0; i < tex_size; i++) {
+                int offset = (j * unpack_row_length + i) * bpp;
+                data[offset + 0] = 255;
+                data[offset + 1] = 0;
+                data[offset + 2] = 0;
+                data[offset + 3] = 255;
+            }
         }
+
+        glGenBuffers(1, &mPbo);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mPbo);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER, tex_size * unpack_row_length * bpp, data.data(), GL_STATIC_DRAW);
+
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+
+        glGenTextures(1, &mTex);
+        glBindTexture(GL_TEXTURE_2D, mTex);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_size, tex_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+        glGenFramebuffers(1, &mFbo);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, mFbo);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTex, 0);
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         return true;
     }
 
-    void destroy() override { glDeleteProgram(mProgram); }
+    void destroy() override {
+        // glDeleteProgram(mProgram);
+    }
 
     void draw() override
     {
-        GLfloat vertices[] = {
-            0.0f, 0.5f, 0.0f, -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f,
-        };
-
         // Set the viewport
         glViewport(0, 0, getWindow()->getWidth(), getWindow()->getHeight());
 
         // Clear the color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Use the program object
-        glUseProgram(mProgram);
-
-        // Load the vertex data
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-        glEnableVertexAttribArray(0);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, mFbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, tex_size, tex_size, 0, 0, tex_size, tex_size, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
   private:
-    GLuint mProgram;
+    GLuint mTex;
+    GLuint mPbo;
+    GLuint mFbo;
 };
 
 int main(int argc, char **argv)
