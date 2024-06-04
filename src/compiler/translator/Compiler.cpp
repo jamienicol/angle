@@ -1281,7 +1281,7 @@ bool TCompiler::checkAndSimplifyAST(TIntermBlock *root,
 
     // Run after RemoveUnreferencedVariables, validate that the shader does not have excessively
     // large variables.
-    if (shouldLimitTypeSizes() && !ValidateTypeSizeLimitations(root, &mSymbolTable, &mDiagnostics))
+    if (shouldLimitTypeSizes() && !ValidateTypeSizeLimitations(mResources, root, &mSymbolTable, &mDiagnostics))
     {
         return false;
     }

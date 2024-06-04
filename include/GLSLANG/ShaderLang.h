@@ -754,6 +754,10 @@ struct ShBuiltInResources
     // ANGLE_shader_pixel_local_storage.
     int MaxPixelLocalStoragePlanes;
     int MaxCombinedDrawBuffersAndPixelLocalStoragePlanes;
+
+    // Variable size limits for webgl-mode validation.
+    size_t MaxVariableSizeInBytes;
+    size_t MaxPrivateVariableSizeInBytes;
 };
 
 //
