@@ -1019,7 +1019,7 @@ ANGLE_INLINE angle::Result VertexArrayVk::syncDirtyEnabledNonStreamingAttrib(
         else
         {
             mCurrentArrayBufferHandles[attribIndex] =
-                bufferHelper.getBufferForVertexArray(contextVk, bufferSize, &bufferOffset)
+                bufferHelper.getBufferForVertexArray(contextVk, bufferVk->getSize(), &bufferOffset)
                     .getHandle();
         }
 
