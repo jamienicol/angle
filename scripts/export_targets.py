@@ -283,6 +283,7 @@ IGNORED_DIRECTORIES = {
     '//third_party/abseil-cpp',
     '//third_party/SwiftShader',
     '//third_party/dawn',
+    '//third_party/android_ndk',
 }
 
 def has_all_includes(target_name: str, descs: dict) -> bool:
