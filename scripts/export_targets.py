@@ -131,6 +131,15 @@ descs = json.loads(p.stdout.decode())
 
 LIBRARY_TYPES = ('shared_library', 'static_library')
 
+def is_source_set_lib(source_set):
+    if source_set['type'] != 'source_set':
+        return False
+    
+    if not source_set.get('deps', []) and not source_set.get('source_outputs'):
+        return False
+
+    return True
+
 def flattened_target(target_name: str, descs: dict, stop_at_lib: bool =True) -> dict:
     flattened = dict(descs[target_name])
 
@@ -141,7 +150,10 @@ def flattened_target(target_name: str, descs: dict, stop_at_lib: bool =True) -> 
 
         dep_type = dep['type']
         deps = dep['deps']
-        if stop_at_lib and dep_type in LIBRARY_TYPES:
+        if stop_at_lib and (
+            dep_type in LIBRARY_TYPES
+            or is_source_set_lib(dep)
+        ):
             return ((),)
 
         if dep_type == 'copy':
@@ -327,7 +339,7 @@ def gather_libraries(roots: Sequence[str], descs: dict) -> Set[str]:
         print('  ' + cur['type'], target_name, file=sys.stderr)
         assert has_all_includes(target_name, descs), target_name
 
-        if cur['type'] in ('shared_library', 'static_library'):
+        if cur["type"] in ("shared_library", "static_library") or is_source_set_lib(cur):
             libraries.add(target_name)
         return (cur['deps'], )
 
