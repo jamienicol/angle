@@ -129,12 +129,12 @@ descs = json.loads(p.stdout.decode())
 # Ready to traverse
 # ------------------------------------------------------------------------------
 
-LIBRARY_TYPES = ('shared_library', 'static_library')
+LIBRARY_TYPES = ('shared_library', 'static_library', 'source_set')
 
 def flattened_target(target_name: str, descs: dict, stop_at_lib: bool =True) -> dict:
     flattened = dict(descs[target_name])
 
-    EXPECTED_TYPES = LIBRARY_TYPES + ('source_set', 'group', 'action')
+    EXPECTED_TYPES = LIBRARY_TYPES + ('group', 'action')
 
     def pre(k):
         dep = descs[k]
@@ -340,7 +340,7 @@ def gather_libraries(roots: Sequence[str], descs: dict) -> Set[str]:
         print('  ' + cur['type'], target_name, file=sys.stderr)
         assert has_all_includes(target_name, descs), target_name
 
-        if cur['type'] in ('shared_library', 'static_library'):
+        if cur["type"] in LIBRARY_TYPES:
             libraries.add(target_name)
         return (cur['deps'], )
 
