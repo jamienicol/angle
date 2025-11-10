@@ -216,6 +216,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/vulkan/win32/DisplayVkWin32.h',
     b'libANGLE/renderer/vulkan/xcb/DisplayVkXcb.h',
     b'libANGLE/renderer/vulkan/wayland/DisplayVkWayland.h',
+    b'libANGLE/renderer/wgpu/DisplayWgpu_api.h',
     b'loader_cmake_config.h',
     b'loader_linux.h',
     b'loader_windows.h',
@@ -284,6 +285,7 @@ IGNORED_DIRECTORIES = {
     '//third_party/SwiftShader',
     '//third_party/dawn',
     '//third_party/android_ndk',
+    '//third_party/cpu_features',
 }
 
 def has_all_includes(target_name: str, descs: dict) -> bool:
