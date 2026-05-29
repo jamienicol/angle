@@ -860,7 +860,12 @@ static MTLLanguageVersion GetUserSetOrHighestMSLVersion(const MTLLanguageVersion
                     case 3:
                         return MTLLanguageVersion2_3;
                     case 4:
-                        return MTLLanguageVersion2_4;
+                        if (@available(macOS 12.0, *))
+                        {
+                            return MTLLanguageVersion2_4;
+                        }
+                        assert(0 && "MSL 2.4 requires macOS 12.");
+                        break;
                     default:
                         assert(0 && "Unsupported MSL Minor Language Version.");
                 }
