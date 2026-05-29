@@ -478,9 +478,10 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
                                                         angle_to_gl, mac_angle_to_mtl)
     switch_data += "#endif\n"
 
-    # Override missing ES 3.0 formats for older macOS SDK or Catalyst
-    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED < 110000)) || \\\n"
-    switch_data += "TARGET_OS_MACCATALYST\n"
+    # Override missing ES 3.0 formats for older macOS SDK/deployment target or Catalyst.
+    switch_data += "#if (TARGET_OS_OSX && ((__MAC_OS_X_VERSION_MAX_ALLOWED < 110000) || \\\n"
+    switch_data += "                       (__MAC_OS_X_VERSION_MIN_REQUIRED < 110000))) || \\\n"
+    switch_data += "    TARGET_OS_MACCATALYST\n"
     for angle_format in sorted(mac_override_es3.keys()):
         switch_data += gen_image_map_switch_simple_case(angle_format,
                                                         mac_override_es3[angle_format],
@@ -558,7 +559,8 @@ def gen_image_map_switch_string(image_table, angle_to_gl):
     switch_data += "#endif // TARGET_OS_IPHONE\n"
 
     # Try to support all iOS formats on newer macOS with Apple GPU.
-    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
+    switch_data += "#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000) && \\\n"
+    switch_data += "     (__MAC_OS_X_VERSION_MIN_REQUIRED >= 110000))\n"
     for angle_format in sorted(ios_specific_map.keys()):
         # Do not re-emit depth-specific formats.
         if (angle_format not in mac_depth_fallbacks.keys()):
@@ -620,7 +622,9 @@ def gen_image_mtl_to_angle_switch_string(image_table):
     switch_data += "#endif  // TARGET_OS_OSX || TARGET_OS_MACCATALYST\n"
 
     # iOS + macOS 11.0+ specific
-    switch_data += "#if TARGET_OS_IPHONE || (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
+    switch_data += "#if TARGET_OS_IPHONE || \\\n"
+    switch_data += "    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000) && \\\n"
+    switch_data += "     (__MAC_OS_X_VERSION_MIN_REQUIRED >= 110000))\n"
     # Tracks whether the pixel format family being added to `switch_data` is deprecated.
     section_contains_deprecated_format = False
     for angle_format in sorted(ios_specific_map.keys()):
@@ -762,7 +766,8 @@ def gen_mtl_format_caps_init_string(map_image):
     caps_init_str += "#endif  // TARGET_OS_OSX || TARGET_OS_MACCATALYST\n"
 
     caps_init_str += "#if (TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST) || \\\n"
-    caps_init_str += "    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))\n"
+    caps_init_str += "    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000) && \\\n"
+    caps_init_str += "     (__MAC_OS_X_VERSION_MIN_REQUIRED >= 110000))\n"
 
     caps_init_str += caps_to_cpp(ios_platform_caps)
 
