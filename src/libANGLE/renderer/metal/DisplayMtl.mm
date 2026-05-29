@@ -1021,23 +1021,27 @@ void DisplayMtl::initializeExtensions() const
 
     mNativeExtensions.sampleVariablesOES = true;
 
-    if ([mMetalDevice supportsPullModelInterpolation])
+    if (@available(macOS 11.0, *))
     {
-        mNativeExtensions.shaderMultisampleInterpolationOES = true;
-        mNativeCaps.subPixelInterpolationOffsetBits         = 4;
-        if (supportsAppleGPUFamily(1))
+        mNativeExtensions.shaderMultisampleInterpolationOES =
+            [mMetalDevice supportsPullModelInterpolation];
+        if (mNativeExtensions.shaderMultisampleInterpolationOES)
         {
-            mNativeCaps.minInterpolationOffset = -0.5f;
-            mNativeCaps.maxInterpolationOffset = +0.5f;
-        }
-        else
-        {
-            // On non-Apple GPUs, the actual range is usually
-            // [-0.5, +0.4375] but due to framebuffer Y-flip
-            // the effective range for the Y direction will be
-            // [-0.4375, +0.5] when the default FBO is bound.
-            mNativeCaps.minInterpolationOffset = -0.4375f;  // -0.5 + (2 ^ -4)
-            mNativeCaps.maxInterpolationOffset = +0.4375f;  // +0.5 - (2 ^ -4)
+            mNativeCaps.subPixelInterpolationOffsetBits = 4;
+            if (supportsAppleGPUFamily(1))
+            {
+                mNativeCaps.minInterpolationOffset = -0.5f;
+                mNativeCaps.maxInterpolationOffset = +0.5f;
+            }
+            else
+            {
+                // On non-Apple GPUs, the actual range is usually
+                // [-0.5, +0.4375] but due to framebuffer Y-flip
+                // the effective range for the Y direction will be
+                // [-0.4375, +0.5] when the default FBO is bound.
+                mNativeCaps.minInterpolationOffset = -0.4375f;  // -0.5 + (2 ^ -4)
+                mNativeCaps.maxInterpolationOffset = +0.4375f;  // +0.5 - (2 ^ -4)
+            }
         }
     }
 
@@ -1378,7 +1382,11 @@ bool DisplayMtl::supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) c
 bool DisplayMtl::supports32BitFloatFiltering() const
 {
 #if !TARGET_OS_WATCH
-    return [mMetalDevice supports32BitFloatFiltering];
+    if (@available(macOS 11.0, *))
+    {
+        return [mMetalDevice supports32BitFloatFiltering];
+    }
+    return true;  // Always true on old macOS
 #else
     return false;
 #endif
@@ -1386,14 +1394,14 @@ bool DisplayMtl::supports32BitFloatFiltering() const
 
 bool DisplayMtl::supportsBCTextureCompression() const
 {
-    if (@available(macCatalyst 16.4, iOS 16.4, *))
+    if (@available(macOS 11.0, macCatalyst 16.4, iOS 16.4, *))
     {
         return [mMetalDevice supportsBCTextureCompression];
     }
-#if TARGET_OS_MACCATALYST
-    return true;  // Always true on old Catalyst
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    return true;  // Always true on old macOS
 #else
-    return false;  // Always false on old iOS
+    return false;  // Always false everywhere else
 #endif
 }
 
