@@ -134,9 +134,13 @@ if (is_apple) {
   ]
   if (is_mac) {
     libangle_common_sources += [
+      "src/common/system_utils_mac.cpp",
+    ]
+  }
+  if (angle_enable_cgl) {
+    libangle_common_sources += [
       "src/common/gl/cgl/FunctionsCGL.cpp",
       "src/common/gl/cgl/FunctionsCGL.h",
-      "src/common/system_utils_mac.cpp",
     ]
   }
   if (is_ios) {
