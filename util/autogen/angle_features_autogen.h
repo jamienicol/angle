@@ -230,6 +230,8 @@ enum class Feature
     InitFragmentOutputVariables,
     InitializeCurrentVertexAttributes,
     InjectAsmStatementIntoLoopBodies,
+    IntelDisableFastMath,
+    IntelExplicitBoolCastWorkaround,
     IsVertexSyncDeferred,
     KeepBufferShadowCopy,
     LimitMax3dArrayTextureSizeTo1024,
